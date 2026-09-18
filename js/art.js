@@ -165,15 +165,48 @@
   A.loadCharSprites = function (ids) {
     ids.forEach((id) => { const im = new Image(); im.onload = () => { A.charImg[id] = im; ['_walk1', '_walk2'].forEach((s) => { const w = new Image(); w.onload = () => { A.charImg[id + s] = w; }; w.src = 'assets/chars/' + id + s + '.png'; }); }; im.src = 'assets/chars/' + id + '.png'; });
   };
+  /* 이미지 분석: 아래쪽에서 위로 훑으며 두 다리 사이의 빈틈을 찾아 '다리 시작 높이'와 '좌우 분할선'을 구함 */
+  function analyzeSprite(img) {
+    const w = img.width, h = img.height, an = { legTop: 0.8, split: 0.5, gap: false, cx: 0.5 };
+    let d; try { const cv = canvas(w, h), c = cv.getContext('2d'); c.drawImage(img, 0, 0); d = c.getImageData(0, 0, w, h).data; } catch (e) { return an; }
+    const minRun = Math.max(3, w * 0.04), splits = []; let topRow = h, miss = 0;
+    for (let y = h - 3; y > h * 0.5; y--) {
+      const runs = []; let st = -1, hole = 0;
+      for (let x = 0; x <= w; x++) { const on = x < w && d[(y * w + x) * 4 + 3] > 90; if (on) { if (st < 0) st = x; hole = 0; } else if (st >= 0 && (++hole > 2 || x === w)) { if (x - hole - st + 1 >= minRun) runs.push([st, x - hole]); st = -1; hole = 0; } }
+      if (runs.length >= 2) { runs.sort((a, b) => (b[1] - b[0]) - (a[1] - a[0])); const two = runs.slice(0, 2).sort((a, b) => a[0] - b[0]); splits.push((two[0][1] + two[1][0]) / 2); topRow = y; miss = 0; }
+      else if (splits.length && ++miss > h * 0.015) break;
+      else if (!splits.length && h - y > h * 0.14) break;
+    }
+    if (splits.length >= 6) { splits.sort((a, b) => a - b); an.gap = true; an.split = splits[splits.length >> 1] / w; an.legTop = Math.max(0.55, topRow / h); }
+    let sx = 0, n = 0; for (let y = (h * 0.3) | 0; y < h * 0.7; y += 3) for (let x = 0; x < w; x += 3) if (d[(y * w + x) * 4 + 3] > 90) { sx += x; n++; } if (n) an.cx = sx / n / w;
+    return an;
+  }
+  /* Live2D식 메시 변형: 가로 띠로 나눠 그리며 띠마다 위치·폭·높이를 다르게 → 머리 끄덕임/상체 호흡/머리카락·모자 지연 흔들림/다리 교차 */
   function drawCharSprite(ctx, c, base) {
-    const t = c.t + (c.seed || 0), k = c.scale || 1, sid = c.pal.sid, breath = Math.sin(t * 2.4), step = c.moving ? Math.sin(c.walk) : 0, bounce = c.moving ? Math.abs(step) * 3 : 0;
-    let img = base; if (c.moving && A.charImg[sid + '_walk1'] && A.charImg[sid + '_walk2']) img = A.charImg[sid + (step > 0 ? '_walk1' : '_walk2')];
-    const H = 102, w = img.width * (H / img.height);
-    ctx.save(); ctx.translate(c.x, c.y); ctx.scale(k, k); A.shadow(ctx, 0, 0, 16 - bounce, 5.5 - bounce * 0.4);
+    const img = base, an = img._an || (img._an = analyzeSprite(img));
+    const t = c.t + (c.seed || 0), k = c.scale || 1, mv = c.moving, ph = c.walk, breath = Math.sin(t * 2.4);
+    const H = 102, s = H / img.height, W = img.width * s, N = 84, sh = img.height / N, headEnd = 0.36;
+    const stepS = mv ? Math.sin(ph) : 0, stepC = mv ? Math.cos(ph) : 0, bob = mv ? Math.abs(Math.cos(ph)) * 2.4 : 0;
+    ctx.save(); ctx.translate(c.x, c.y); ctx.scale(k, k); A.shadow(ctx, 0, 0, 16 - bob, 5.5 - bob * 0.4);
     if (c.hurtT > 0 && ((c.hurtT * 20) | 0) % 2) ctx.globalAlpha = 0.45;
     ctx.scale(c.facing || 1, 1); if (c.dashT > 0) ctx.scale(1.16, 0.88);
-    ctx.translate(0, -bounce); ctx.rotate((c.moving ? 0.05 + step * 0.05 : Math.sin(t * 1.1) * 0.015) + (c.swing > 0 ? Math.sin(c.swing * Math.PI) * 0.2 : 0));
-    ctx.scale(1 - breath * 0.012, 1 + breath * 0.018); ctx.drawImage(img, -w / 2, -H + 2, w, H);
+    ctx.translate(0, -bob); ctx.rotate((mv ? 0.045 : 0) + (c.swing > 0 ? Math.sin(c.swing * Math.PI) * 0.2 : 0));
+    const cxPx = an.cx * W, splitSrc = an.split * img.width, legSpan = Math.max(0.05, 1 - an.legTop);
+    let yb = 2;
+    for (let i = N - 1; i >= 0; i--) {
+      const v = (i + 0.5) / N, up = 1 - v; let dh = sh * s;
+      if (v > headEnd && v < 0.64) dh *= 1 + breath * 0.022; if (v < headEnd) dh *= 1 + Math.sin(t * 1.2) * 0.006;
+      const y0 = yb - dh; yb = y0;
+      let dx = Math.sin(t * 1.3) * 1.5 * Math.pow(up, 1.5) + (mv ? -stepS * 1.3 * up : 0), ws = 1;
+      if (v < headEnd) { const hv = (headEnd - v) / headEnd; dx += (Math.sin(t * 1.7 + 0.6) * 1.5 + (mv ? Math.sin(ph * 1 - 0.9) * 2.2 : 0)) * hv + Math.sin(t * 2.6 + 1.4) * 0.9 * hv * hv; ws = 1 + Math.sin(t * 0.9) * 0.014 * hv; }
+      else if (v < 0.64) ws = 1 + breath * 0.014;
+      const sy = i * sh, shh = Math.min(sh + 1, img.height - sy), dhh = dh + 0.8;
+      if (an.gap && v > an.legTop) {
+        const lv = (v - an.legTop) / legSpan, sw = stepS * 7.5 * lv, liftL = Math.max(0, stepC) * 5 * lv, liftR = Math.max(0, -stepC) * 5 * lv, dSplit = splitSrc * s;
+        ctx.drawImage(img, 0, sy, splitSrc, shh, -cxPx + dx + sw, y0 - liftL, dSplit, dhh);
+        ctx.drawImage(img, splitSrc, sy, img.width - splitSrc, shh, -cxPx + dSplit + dx - sw, y0 - liftR, W - dSplit, dhh);
+      } else { if (!an.gap && mv && v > 0.58) dx += stepS * 4.2 * Math.sin(((v - 0.58) / 0.42) * Math.PI * 0.85); const dw = W * ws; ctx.drawImage(img, 0, sy, img.width, shh, -cxPx * ws + dx, y0, dw, dhh); }
+    }
     ctx.restore();
   }
 
