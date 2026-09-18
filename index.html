@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#8ac46c" />
+  <title>숲이 된 도시 — 작은 생존자의 일기</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <canvas id="cv"></canvas>
+
+  <!-- 타이틀 -->
+  <div id="title" class="screen">
+    <div class="seedbox" id="titleSeeds">🌱 0</div>
+    <div class="logo">
+      <div class="logo-sub">작은 생존자의 일기</div>
+      <h1>숲이 된 도시</h1>
+      <div class="logo-line">세상이 멈춘 뒤에도, 풀은 자라고 바람은 붑니다.</div>
+    </div>
+    <div class="menu">
+      <button class="btn big" id="btnStart">🌿 모험 시작</button>
+      <button class="btn" id="btnMeta">🌱 기억의 정원 <small>영구 강화</small></button>
+      <button class="btn" id="btnHelp">📖 생존 수첩 <small>도움말</small></button>
+    </div>
+    <div class="foot">WASD / 방향키 이동 · Space 대시 · E 거점 관리 · 모바일 터치 지원</div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div id="xpbar"><i id="xpFill"></i></div>
+    <div id="tl">
+      <div class="lv" id="lvl">Lv.1</div>
+      <div class="bars">
+        <div class="bar hp"><i id="hpFill"></i><span id="hpTxt"></span></div>
+        <div class="bar hunger"><i id="hgFill"></i><span id="hgTxt"></span></div>
+      </div>
+      <div id="skills"></div>
+    </div>
+    <div id="tc">
+      <div class="clock"><span id="clockIcon">☀️</span><b id="dayTxt">1일차</b><span id="wxTxt"></span></div>
+      <div class="clockbar"><i id="clockFill"></i></div>
+      <div id="diffTag"></div>
+    </div>
+    <div id="tr">
+      <div class="res" id="res"></div>
+      <button class="ibtn" id="btnPause" title="일시정지 (Esc)">⏸</button>
+    </div>
+    <div id="bossbar" class="hidden"><span>검은 안개 왕</span><div><i id="bossFill"></i></div></div>
+    <div id="banner" class="hidden"><h2></h2><p></p></div>
+    <canvas id="mini" width="132" height="132"></canvas>
+    <button class="btn" id="btnBuild">🏕️ 거점 관리 <kbd>E</kbd></button>
+    <button class="ibtn" id="btnDash">💨</button>
+    <div id="joy" class="hidden"><i id="joyKnob"></i></div>
+  </div>
+
+  <div id="toasts"></div>
+  <div id="modal" class="hidden"><div class="panel" id="panel"></div></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
