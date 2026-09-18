@@ -1,1 +1,4 @@
 .claude/
+assets/raw/*.png
+assets/raw/*.jpg
+assets/extra/

@@ -76,14 +76,14 @@
       pal: { hat: 'beanie', outfit: 'hoodie', hatC: '#c4604e', hatShade: '#9c4638', hair: '#2f2a2a', hairLight: '#4a4242', skin: '#fde2c8', skinShade: '#f5cbac', eye: '#3d3029', top: '#7fa37a', topShade: '#5f8560', bottom: '#4a4a52', leg: '#55555f', boot: '#6b4a36', scarf: '#ecdcae', scarfShade: '#d2bf88', pack: '#a9825a', packShade: '#87643f' },
     },
     daehee: {
-      id: 'daehee', name: '대희', title: '든든한 안전모', weapon: 'acorn',
-      desc: '폭발물(도토리) 취급 주의! 느리지만 누구보다 단단합니다.',
+      id: 'daehee', name: '대희', title: '방망이 순경', weapon: 'acorn',
+      desc: '야구방망이를 어깨에 멘 든든한 순경. 느리지만 누구보다 단단합니다.',
       perk: '체력 +50 · 받는 피해 -10% · 이동속도 -8%', mod: { hp: 50, armor: 0.1, speed: -0.08 },
       pal: { hat: 'helmet', outfit: 'vest', vest: '#d97a3a', hair: '#3b2e26', hairLight: '#5a4638', skin: '#f9d9b8', skinShade: '#efc19a', eye: '#4a3626', top: '#e9e4d6', topShade: '#c9c4b4', bottom: '#5a6470', leg: '#5a6470', boot: '#3f3a38', scarf: '#5f7f9c', scarfShade: '#48647e', pack: '#8a8f7a', packShade: '#6c715e' },
     },
     minyong: {
-      id: 'minyong', name: '민용', title: '새싹 정원사', weapon: 'thorn',
-      desc: '머리에 새싹이 돋은 꼬마 정원사. 풀과 덩굴이 말을 잘 들어요.',
+      id: 'minyong', name: '민용', title: '푸른 제복 경관', weapon: 'thorn',
+      desc: '말수는 적지만 끝까지 자리를 지키는 경관. 좀처럼 지치지 않아요.',
       perk: '초당 회복 +0.8 · 허기 소모 -25%', mod: { regen: 0.8, hunger: -0.25 },
       pal: { hat: 'sprout', outfit: 'apron', apron: '#6f9a62', socks: true, hair: '#8a6a48', hairLight: '#ae8c64', skin: '#ffe8d2', skinShade: '#fad2b8', eye: '#5a4a30', top: '#f4ead2', topShade: '#d8ccb0', bottom: '#8a6a48', leg: '#ffe4cc', boot: '#6f9a62', scarf: '#e8b86a', scarfShade: '#c99846', pack: '#b07c4a', packShade: '#8c5f34' },
     },

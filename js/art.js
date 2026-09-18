@@ -173,11 +173,11 @@
     for (let y = h - 3; y > h * 0.5; y--) {
       const runs = []; let st = -1, hole = 0;
       for (let x = 0; x <= w; x++) { const on = x < w && d[(y * w + x) * 4 + 3] > 90; if (on) { if (st < 0) st = x; hole = 0; } else if (st >= 0 && (++hole > 2 || x === w)) { if (x - hole - st + 1 >= minRun) runs.push([st, x - hole]); st = -1; hole = 0; } }
-      if (runs.length >= 2) { runs.sort((a, b) => (b[1] - b[0]) - (a[1] - a[0])); const two = runs.slice(0, 2).sort((a, b) => a[0] - b[0]); splits.push((two[0][1] + two[1][0]) / 2); topRow = y; miss = 0; }
+      if (runs.length >= 2) { runs.sort((a, b) => (b[1] - b[0]) - (a[1] - a[0])); const two = runs.slice(0, 2).sort((a, b) => a[0] - b[0]); splits.push([y, (two[0][1] + two[1][0]) / 2]); miss = 0; }
       else if (splits.length && ++miss > h * 0.015) break;
       else if (!splits.length && h - y > h * 0.14) break;
     }
-    if (splits.length >= 6) { splits.sort((a, b) => a - b); an.gap = true; an.split = splits[splits.length >> 1] / w; an.legTop = Math.max(0.55, topRow / h); }
+    if (splits.length >= 6) { const xs = splits.map((p) => p[1]).sort((a, b) => a - b), med = xs[xs.length >> 1]; let bad = 0; for (const p of splits) { if (Math.abs(p[1] - med) < w * 0.07) { topRow = p[0]; bad = 0; } else if (++bad > h * 0.02) break; } if (topRow / h < 0.9) { an.gap = true; an.split = med / w; an.legTop = Math.max(0.55, topRow / h); } }
     let sx = 0, n = 0; for (let y = (h * 0.3) | 0; y < h * 0.7; y += 3) for (let x = 0; x < w; x += 3) if (d[(y * w + x) * 4 + 3] > 90) { sx += x; n++; } if (n) an.cx = sx / n / w;
     return an;
   }
