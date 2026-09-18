@@ -168,7 +168,7 @@
   function drawCharSprite(ctx, c, base) {
     const t = c.t + (c.seed || 0), k = c.scale || 1, sid = c.pal.sid, breath = Math.sin(t * 2.4), step = c.moving ? Math.sin(c.walk) : 0, bounce = c.moving ? Math.abs(step) * 3 : 0;
     let img = base; if (c.moving && A.charImg[sid + '_walk1'] && A.charImg[sid + '_walk2']) img = A.charImg[sid + (step > 0 ? '_walk1' : '_walk2')];
-    const H = 84, w = img.width * (H / img.height);
+    const H = 102, w = img.width * (H / img.height);
     ctx.save(); ctx.translate(c.x, c.y); ctx.scale(k, k); A.shadow(ctx, 0, 0, 16 - bounce, 5.5 - bounce * 0.4);
     if (c.hurtT > 0 && ((c.hurtT * 20) | 0) % 2) ctx.globalAlpha = 0.45;
     ctx.scale(c.facing || 1, 1); if (c.dashT > 0) ctx.scale(1.16, 0.88);

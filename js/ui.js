@@ -161,7 +161,7 @@
 
   /* 선택 화면 초상화 애니메이션 */
   UI.drawPortraits = function (t) {
-    for (const p of UI.portraits) { const c = p.cv.getContext('2d'); c.clearRect(0, 0, 150, 150); const g = c.createLinearGradient(0, 0, 0, 150); g.addColorStop(0, '#bfe6f7'); g.addColorStop(0.7, '#f5f0d2'); g.addColorStop(1, '#a9d67a'); c.fillStyle = g; c.beginPath(); c.arc(75, 75, 72, 0, 7); c.fill(); c.save(); c.beginPath(); c.arc(75, 75, 72, 0, 7); c.clip(); G.art.drawChar(c, { x: 78, y: 146, t, walk: 0, moving: false, facing: 1, scale: 1.75, pal: p.pal, seed: p.pal.hair.charCodeAt(2) * 0.37, wind: 0.8 }); c.restore(); }
+    for (const p of UI.portraits) { const c = p.cv.getContext('2d'); c.clearRect(0, 0, 150, 150); const g = c.createLinearGradient(0, 0, 0, 150); g.addColorStop(0, '#bfe6f7'); g.addColorStop(0.7, '#f5f0d2'); g.addColorStop(1, '#a9d67a'); c.fillStyle = g; c.beginPath(); c.arc(75, 75, 72, 0, 7); c.fill(); c.save(); c.beginPath(); c.arc(75, 75, 72, 0, 7); c.clip(); const im = G.art.charImg[p.pal.sid]; G.art.drawChar(c, { x: im ? 75 : 78, y: im ? 232 : 146, t, walk: 0, moving: false, facing: 1, scale: im ? 2.7 : 1.75, pal: p.pal, seed: p.pal.hair.charCodeAt(2) * 0.37, wind: 0.8 }); c.restore(); }
   };
 
   $('btnPause').onclick = () => { if (!UI.modalKind) { click(); UI.showPause(); } };
