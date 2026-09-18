@@ -160,10 +160,10 @@
   };
 
   /* ───────── 이미지 캐릭터 (assets/chars/<id>.png 가 있으면 코드 그림 대신 사용) ─────────
-     한 장짜리 그림을 숨쉬기·걷기 바운스·기울임으로 움직입니다. <id>_walk1/2.png 가 있으면 걷기 프레임으로 사용 */
+     한 장짜리 그림을 Live2D식 메시 변형으로 움직입니다 */
   A.charImg = {};
   A.loadCharSprites = function (ids) {
-    ids.forEach((id) => { const im = new Image(); im.onload = () => { A.charImg[id] = im; ['_walk1', '_walk2'].forEach((s) => { const w = new Image(); w.onload = () => { A.charImg[id + s] = w; }; w.src = 'assets/chars/' + id + s + '.png'; }); }; im.src = 'assets/chars/' + id + '.png'; });
+    ids.forEach((id) => { const im = new Image(); im.onload = () => { A.charImg[id] = im; }; im.src = 'assets/chars/' + id + '.png'; });
   };
   /* 이미지 분석: 아래쪽에서 위로 훑으며 두 다리 사이의 빈틈을 찾아 '다리 시작 높이'와 '좌우 분할선'을 구함 */
   function analyzeSprite(img) {
@@ -181,32 +181,53 @@
     let sx = 0, n = 0; for (let y = (h * 0.3) | 0; y < h * 0.7; y += 3) for (let x = 0; x < w; x += 3) if (d[(y * w + x) * 4 + 3] > 90) { sx += x; n++; } if (n) an.cx = sx / n / w;
     return an;
   }
-  /* Live2D식 메시 변형: 가로 띠로 나눠 그리며 띠마다 위치·폭·높이를 다르게 → 머리 끄덕임/상체 호흡/머리카락·모자 지연 흔들림/다리 교차 */
+  /* Live2D식 메시 변형: 가로 띠로 나눠 그리며 띠마다 위치·폭·높이를 다르게
+     → 호흡 / 머리·모자 지연 흔들림 / 다리 교차 / 눈 깜빡임(눈꺼풀 덧그림) / 공격 내지르기 / 피격 움찔+붉은 번쩍 / 채집 휘두르기 */
+  const SN = 84, stY = new Float32Array(SN), stH = new Float32Array(SN), stX = new Float32Array(SN), stW = new Float32Array(SN);
+  function tintOf(img) { if (img._tint) return img._tint; const cv = canvas(img.width, img.height), c = cv.getContext('2d'); c.drawImage(img, 0, 0); c.globalCompositeOperation = 'source-atop'; c.fillStyle = '#ff3b3b'; c.fillRect(0, 0, cv.width, cv.height); return (img._tint = cv); }
   function drawCharSprite(ctx, c, base) {
-    const img = base, an = img._an || (img._an = analyzeSprite(img));
+    const img = base, an = img._an || (img._an = analyzeSprite(img)), pal = c.pal;
     const t = c.t + (c.seed || 0), k = c.scale || 1, mv = c.moving, ph = c.walk, breath = Math.sin(t * 2.4);
-    const H = 102, s = H / img.height, W = img.width * s, N = 84, sh = img.height / N, headEnd = 0.36;
+    const H = 102, s = H / img.height, W = img.width * s, N = SN, sh = img.height / N, headEnd = 0.36;
     const stepS = mv ? Math.sin(ph) : 0, stepC = mv ? Math.cos(ph) : 0, bob = mv ? Math.abs(Math.cos(ph)) * 2.4 : 0;
+    const hurt = c.hurtT > 0 ? Math.min(1, c.hurtT / 0.35) : 0, atk = c.atk > 0 ? Math.sin(Math.min(1, c.atk) * Math.PI) : 0;
+    // 채집: 뒤로 젖혔다가(준비) → 내리찍고(타격) → 복귀
+    let chop = 0, toolA = null; if (c.swing > 0) { const q = 1 - c.swing; chop = q < 0.35 ? -(q / 0.35) * 0.16 : q < 0.55 ? -0.16 + ((q - 0.35) / 0.2) * 0.44 : 0.28 * (1 - (q - 0.55) / 0.45); toolA = q < 0.35 ? -0.6 - (q / 0.35) * 1.7 : q < 0.55 ? -2.3 + ((q - 0.35) / 0.2) * 3.3 : 1.0 - ((q - 0.55) / 0.45) * 0.9; }
     ctx.save(); ctx.translate(c.x, c.y); ctx.scale(k, k); A.shadow(ctx, 0, 0, 16 - bob, 5.5 - bob * 0.4);
-    if (c.hurtT > 0 && ((c.hurtT * 20) | 0) % 2) ctx.globalAlpha = 0.45;
     ctx.scale(c.facing || 1, 1); if (c.dashT > 0) ctx.scale(1.16, 0.88);
-    ctx.translate(0, -bob); ctx.rotate((mv ? 0.045 : 0) + (c.swing > 0 ? Math.sin(c.swing * Math.PI) * 0.2 : 0));
+    ctx.translate(-hurt * 6 + (hurt ? Math.sin(t * 90) * 1.6 * hurt : 0), -bob - (chop < 0 ? -chop * 14 : 0));
+    ctx.rotate((mv ? 0.045 : 0) + chop + atk * 0.1 - hurt * 0.26); ctx.scale(1 + hurt * 0.08 + atk * 0.03, 1 - hurt * 0.1 - (chop > 0.2 ? 0.05 : 0));
     const cxPx = an.cx * W, splitSrc = an.split * img.width, legSpan = Math.max(0.05, 1 - an.legTop);
-    let yb = 2;
-    for (let i = N - 1; i >= 0; i--) {
-      const v = (i + 0.5) / N, up = 1 - v; let dh = sh * s;
-      if (v > headEnd && v < 0.64) dh *= 1 + breath * 0.022; if (v < headEnd) dh *= 1 + Math.sin(t * 1.2) * 0.006;
-      const y0 = yb - dh; yb = y0;
-      let dx = Math.sin(t * 1.3) * 1.5 * Math.pow(up, 1.5) + (mv ? -stepS * 1.3 * up : 0), ws = 1;
-      if (v < headEnd) { const hv = (headEnd - v) / headEnd; dx += (Math.sin(t * 1.7 + 0.6) * 1.5 + (mv ? Math.sin(ph * 1 - 0.9) * 2.2 : 0)) * hv + Math.sin(t * 2.6 + 1.4) * 0.9 * hv * hv; ws = 1 + Math.sin(t * 0.9) * 0.014 * hv; }
-      else if (v < 0.64) ws = 1 + breath * 0.014;
-      const sy = i * sh, shh = Math.min(sh + 1, img.height - sy), dhh = dh + 0.8;
-      if (an.gap && v > an.legTop) {
-        const lv = (v - an.legTop) / legSpan, sw = stepS * 7.5 * lv, liftL = Math.max(0, stepC) * 5 * lv, liftR = Math.max(0, -stepC) * 5 * lv, dSplit = splitSrc * s;
-        ctx.drawImage(img, 0, sy, splitSrc, shh, -cxPx + dx + sw, y0 - liftL, dSplit, dhh);
-        ctx.drawImage(img, splitSrc, sy, img.width - splitSrc, shh, -cxPx + dSplit + dx - sw, y0 - liftR, W - dSplit, dhh);
-      } else { if (!an.gap && mv && v > 0.58) dx += stepS * 4.2 * Math.sin(((v - 0.58) / 0.42) * Math.PI * 0.85); const dw = W * ws; ctx.drawImage(img, 0, sy, img.width, shh, -cxPx * ws + dx, y0, dw, dhh); }
+    const pass = (src) => {
+      let yb = 2;
+      for (let i = N - 1; i >= 0; i--) {
+        const v = (i + 0.5) / N, up = 1 - v; let dh = sh * s;
+        if (v > headEnd && v < 0.64) dh *= 1 + breath * 0.022; if (v < headEnd) dh *= 1 + Math.sin(t * 1.2) * 0.006;
+        const y0 = yb - dh; yb = y0;
+        let dx = Math.sin(t * 1.3) * 1.5 * Math.pow(up, 1.5) + (mv ? -stepS * 1.3 * up : 0) + atk * 7 * up, ws = 1;
+        if (v < headEnd) { const hv = (headEnd - v) / headEnd; dx += (Math.sin(t * 1.7 + 0.6) * 1.5 + (mv ? Math.sin(ph - 0.9) * 2.2 : 0) - hurt * 5 + atk * 2) * hv + Math.sin(t * 2.6 + 1.4) * 0.9 * hv * hv; ws = 1 + Math.sin(t * 0.9) * 0.014 * hv; }
+        else if (v < 0.64) ws = 1 + breath * 0.014;
+        stY[i] = y0; stH[i] = dh; stX[i] = dx; stW[i] = ws;
+        const sy = i * sh, shh = Math.min(sh + 1, img.height - sy), dhh = dh + 0.8;
+        if (an.gap && v > an.legTop) {
+          const lv = (v - an.legTop) / legSpan, sw = stepS * 7.5 * lv, liftL = Math.max(0, stepC) * 5 * lv, liftR = Math.max(0, -stepC) * 5 * lv, dSplit = splitSrc * s;
+          ctx.drawImage(src, 0, sy, splitSrc, shh, -cxPx + dx + sw, y0 - liftL, dSplit, dhh);
+          ctx.drawImage(src, splitSrc, sy, img.width - splitSrc, shh, -cxPx + dSplit + dx - sw, y0 - liftR, W - dSplit, dhh);
+        } else { if (!an.gap && mv && v > 0.58) dx += stepS * 4.2 * Math.sin(((v - 0.58) / 0.42) * Math.PI * 0.85); ctx.drawImage(src, 0, sy, img.width, shh, -cxPx * ws + dx, y0, W * ws, dhh); }
+      }
+    };
+    pass(img);
+    // 눈 깜빡임: 눈 위에 피부색 눈꺼풀 + 속눈썹 선을 덧그림 (띠 변형을 그대로 따라감)
+    const bt = t % 3.7, shut = hurt > 0.2 ? 1 : bt < 0.07 ? bt / 0.07 : bt < 0.13 ? 1 : bt < 0.22 ? 1 - (bt - 0.13) / 0.09 : (bt > 0.5 && bt < 0.62 && ((t / 3.7) | 0) % 3 === 0) ? 1 : 0;
+    if (shut > 0.05 && pal.eyes) for (const e of pal.eyes) {
+      const i = Math.min(N - 1, Math.max(0, (e[1] * N) | 0)), fy = e[1] * N - i, ex = -cxPx * stW[i] + stX[i] + e[0] * W * stW[i], ey = stY[i] + fy * stH[i], hw = e[2] * W * 1.35, hh = e[3] * H * 1.5;
+      ctx.save(); ctx.beginPath(); ctx.rect(ex - hw - 1, ey - hh - 1, hw * 2 + 2, (hh * 2 + 2) * (0.25 + shut * 0.75)); ctx.clip(); ell(ctx, ex, ey, hw, hh); ctx.fillStyle = pal.lid || '#f3cfae'; ctx.fill(); ctx.restore();
+      if (shut > 0.6) { ctx.strokeStyle = '#3a2a26'; ctx.lineWidth = Math.max(0.9, hh * 0.28); ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(ex - hw * 0.85, ey + hh * 0.25); ctx.quadraticCurveTo(ex, ey + hh * (hurt ? 0.0 : 0.85), ex + hw * 0.85, ey + hh * 0.25); ctx.stroke(); }
     }
+    if (hurt > 0) { ctx.globalAlpha = 0.42 * hurt; pass(tintOf(img)); ctx.globalAlpha = 1; }
+    // 공격 궤적 / 채집 도구
+    if (atk > 0.05) { ctx.strokeStyle = `rgba(255,255,255,${atk * 0.8})`; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(W * 0.05, -H * 0.5, W * 0.62 + atk * 6, -0.9, 0.7); ctx.stroke(); }
+    if (toolA != null) { ctx.save(); ctx.translate(W * 0.2, -H * 0.5); ctx.rotate(toolA); ctx.fillStyle = '#8a6a48'; rr(ctx, -2, -34, 4, 38, 2); ctx.fill(); ctx.strokeStyle = CO; ctx.lineWidth = 1; ctx.stroke(); ctx.beginPath(); ctx.moveTo(-13, -30); ctx.quadraticCurveTo(0, -42, 15, -29); ctx.quadraticCurveTo(0, -35, -13, -30); ctx.closePath(); ctx.fillStyle = '#c3cdd3'; ctx.fill(); ctx.stroke(); ctx.restore(); const q = 1 - c.swing; if (q > 0.35 && q < 0.7) { ctx.strokeStyle = `rgba(255,255,255,${0.75 * (1 - (q - 0.35) / 0.35)})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(W * 0.2, -H * 0.5, 40, -1.9, 0.5); ctx.stroke(); } }
     ctx.restore();
   }
 
