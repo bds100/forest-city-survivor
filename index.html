@@ -21,18 +21,18 @@
       <div class="logo-line">세상이 멈춘 뒤에도, 풀은 자라고 바람은 붑니다.</div>
     </div>
     <div class="menu">
-      <button class="btn big" id="btnStart">🌿 모험 시작</button>
+      <button class="btn big hidden" id="btnContinue">🏡 이어하기</button>
+      <button class="btn big" id="btnStart">🌿 새 모험</button>
       <button class="btn" id="btnMeta">🌱 기억의 정원 <small>영구 강화</small></button>
       <button class="btn" id="btnHelp">📖 생존 수첩 <small>도움말</small></button>
     </div>
-    <div class="foot">WASD / 방향키 이동 · Space 대시 · E 거점 관리 · 모바일 터치 지원</div>
+    <div class="foot">WASD 이동 · Space/클릭 공격 · Shift 대시 · B 건설 · E 상호작용 · 모바일 터치 지원</div>
   </div>
 
   <!-- HUD -->
   <div id="hud" class="hidden">
-    <div id="xpbar"><i id="xpFill"></i></div>
     <div id="tl">
-      <div class="lv" id="lvl">Lv.1</div>
+      <div class="lv" id="lvl">🏏</div>
       <div class="bars">
         <div class="bar hp"><i id="hpFill"></i><span id="hpTxt"></span></div>
         <div class="bar hunger"><i id="hgFill"></i><span id="hgTxt"></span></div>
@@ -51,7 +51,10 @@
     <div id="bossbar" class="hidden"><span>검은 안개 왕</span><div><i id="bossFill"></i></div></div>
     <div id="banner" class="hidden"><h2></h2><p></p></div>
     <canvas id="mini" width="132" height="132"></canvas>
-    <button class="btn" id="btnBuild">🏕️ 거점 관리 <kbd>E</kbd></button>
+    <div id="hotbar"></div>
+    <div id="buildbar" class="hidden"><span id="buildName"></span><button class="btn small green" id="btnPlace">설치 <kbd>Space</kbd></button><button class="btn small" id="btnCancel">그만 <kbd>Esc</kbd></button></div>
+    <button class="btn hidden" id="btnInteract"></button>
+    <button class="ibtn" id="btnAttack">⚔️</button>
     <button class="ibtn" id="btnDash">💨</button>
     <div id="joy" class="hidden"><i id="joyKnob"></i></div>
   </div>

@@ -80,7 +80,7 @@ body.touch #btnDash { display: block; }
 #joyKnob { position: absolute; left: 50%; top: 50%; width: 50px; height: 50px; margin: -25px; border-radius: 50%; background: rgba(255, 248, 231, .85); border: 2.5px solid var(--line); }
 
 /* ── 토스트 ── */
-#toasts { position: fixed; left: 0; right: 0; bottom: 84px; display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: none; z-index: 30; }
+#toasts { position: fixed; left: 0; right: 0; bottom: 132px; display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: none; z-index: 30; }
 .toast { background: rgba(255, 248, 231, .95); border: 2px solid var(--line); border-radius: 14px; padding: 8px 16px; font-size: 15px; max-width: min(560px, 90vw); box-shadow: var(--shadow); animation: toastIn .35s ease both; }
 .toast.out { animation: toastOut .4s ease both; }
 @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } } @keyframes toastOut { to { opacity: 0; transform: translateY(-8px); } }
@@ -146,3 +146,19 @@ body.touch #btnDash { display: block; }
 .chardetail h3 { margin: 0; font-size: 22px; } .chardetail h3 small { font: 13px 'Gowun Dodum'; color: var(--ink2); } .chardetail p { margin: 4px 0 8px; font-size: 14px; color: var(--ink2); }
 .perk.wp { background: #ffe9d6; color: #8a4a20; }
 @media (max-width: 680px) { .chip { width: 74px; } .chip canvas { width: 62px; height: 62px; } .chip b { font-size: 14px; } }
+
+/* ── 건설 핫바 / 상호작용 ── */
+#hotbar { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 6px; pointer-events: auto; }
+.hot { position: relative; width: 52px; height: 52px; border-radius: 14px; border: 2.5px solid var(--line); background: rgba(255, 248, 231, .94); font-size: 24px; cursor: pointer; box-shadow: 0 3px 0 var(--line); padding: 0; }
+.hot i { position: absolute; left: 5px; top: 2px; font: 11px 'Jua'; font-style: normal; opacity: .5; } .hot small { position: absolute; right: 4px; bottom: 1px; font: 10px 'Jua'; opacity: .55; }
+.hot.on { background: #ffe9a0; transform: translateY(-5px); box-shadow: 0 8px 0 var(--line); } .hot.poor { filter: grayscale(.8) opacity(.6); }
+#buildbar { position: absolute; left: 50%; bottom: 78px; transform: translateX(-50%); display: flex; gap: 8px; align-items: center; background: rgba(255, 248, 231, .95); border: 2.5px solid var(--line); border-radius: 16px; padding: 6px 10px; font: 16px 'Jua'; pointer-events: auto; white-space: nowrap; box-shadow: var(--shadow); }
+#buildbar .cost { display: inline-flex; margin-left: 6px; vertical-align: middle; }
+#btnInteract { position: absolute; left: 50%; bottom: 82px; transform: translateX(-50%); background: linear-gradient(#ffe9a0, #f0c05a); animation: bob 1.4s ease-in-out infinite; white-space: nowrap; }
+#btnAttack { position: absolute; right: 24px; bottom: 250px; width: 66px; height: 66px; font-size: 28px; display: none; opacity: .9; }
+body.touch #btnAttack { display: block; }
+.chipstat { background: rgba(255, 248, 231, .92); border: 2px solid var(--line); border-radius: 11px; padding: 2px 9px; font: 14px 'Jua'; }
+.chipstat.warm { background: #ffe9c4; } .chipstat.sos { background: #ffe27a; animation: pulse 1s infinite; }
+h3.cat { margin: 12px 0 6px; font-size: 18px; color: #3b6e3d; }
+.bcard.pick { cursor: pointer; transition: transform .1s; grid-template-columns: 44px 1fr; } .bcard.pick:hover { transform: translateY(-3px); background: #f4fbe6; } .bcard.pick .ico { font-size: 30px; } .bcard.locked { filter: grayscale(.8) opacity(.6); cursor: not-allowed; }
+@media (max-width: 680px) { .hot { width: 44px; height: 44px; font-size: 20px; } #hotbar { gap: 4px; bottom: 10px; } #mini { width: 96px; height: 96px; bottom: 66px; } #buildbar { bottom: 66px; font-size: 14px; } #btnInteract { bottom: 70px; } }

@@ -62,6 +62,7 @@
       case 'chop': noise(b, t, 0.07, 0.25, 500, 1.5); tone(b, 'square', 140, 70, t, 0.06, 0.06); break;
       case 'clang': tone(b, 'square', 520, 380, t, 0.08, 0.05); noise(b, t, 0.09, 0.16, 3200, 3); break;
       case 'hurt': tone(b, 'sawtooth', 240, 90, t, 0.22, 0.16); noise(b, t, 0.12, 0.15, 600, 0.7); break;
+      case 'swing': noise(b, t, 0.13, 0.16, 900, 0.8, 'bandpass', 3200); break;
       case 'dash': noise(b, t, 0.22, 0.2, 500, 0.9, 'bandpass', 2600); break;
       case 'boom': noise(b, t, 0.4, 0.4, 300, 0.5, 'lowpass', 60); tone(b, 'sine', 120, 35, t, 0.35, 0.3); break;
       case 'thunder': noise(b, t, 0.5, 0.35, 1800, 0.4, 'lowpass', 120); tone(b, 'sawtooth', 90, 40, t, 0.3, 0.12); break;
